@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>CopyVault</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body id="panel-body">
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="header-left">
+      <div class="logo">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+          <rect x="8" y="2" width="13" height="16" rx="2" fill="var(--accent)" opacity="0.25"/>
+          <rect x="3" y="6" width="13" height="16" rx="2" fill="none" stroke="var(--accent)" stroke-width="1.8"/>
+          <line x1="7" y1="11" x2="12" y2="11" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round"/>
+          <line x1="7" y1="14" x2="14" y2="14" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <span class="app-name">CopyVault</span>
+    </div>
+    <div class="header-right">
+      <button class="icon-btn" id="btn-save-url" title="Save current page URL">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/>
+          <path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/>
+        </svg>
+      </button>
+      <button class="icon-btn" id="btn-clear-unpinned" title="Delete all unpinned items">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
+        </svg>
+      </button>
+      <button class="icon-btn" id="btn-detach" title="Open in a separate window">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+          <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- MANUAL ADD -->
+  <div class="add-row">
+    <textarea id="manual-input" class="manual-input" placeholder="Paste or type text here… (Enter to save)" rows="2" spellcheck="false"></textarea>
+    <button class="btn-add" id="btn-add" title="Add to vault">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- SEARCH -->
+  <div class="search-wrap">
+    <svg class="search-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+      <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+    </svg>
+    <input type="text" id="search" class="search-input" placeholder="Search saved items…" autocomplete="off" spellcheck="false">
+    <button class="search-clear hidden" id="search-clear">×</button>
+  </div>
+
+  <!-- LIST -->
+  <div class="list-container" id="list-container">
+    <div class="section-label pinned-label hidden" id="label-pinned">
+      <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M16 1l-1.5 1.5L16 4 9.5 10.5 7 9l-1.5 1.5 3 3-5.5 5.5 1.5 1.5 5.5-5.5 3 3L14.5 16l-1.5-2.5 6.5-6.5 1.5 1.5z"/></svg>
+      Pinned
+    </div>
+    <div class="clip-list" id="list-pinned" data-zone="pinned"></div>
+
+    <div class="section-label history-label hidden" id="label-history">
+      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      Recent
+    </div>
+    <div class="clip-list" id="list-unpinned" data-zone="unpinned"></div>
+
+    <div class="empty-state hidden" id="empty-state">
+      <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1.2" stroke-linecap="round">
+        <rect x="8" y="2" width="13" height="16" rx="2"/><rect x="3" y="6" width="13" height="16" rx="2" fill="var(--surface)"/>
+        <line x1="7" y1="11" x2="12" y2="11"/><line x1="7" y1="14" x2="14" y2="14"/>
+      </svg>
+      <p>Your vault is empty</p>
+      <span>Select text on any page → right-click → "Save to CopyVault"</span>
+    </div>
+
+    <div class="empty-state hidden" id="no-results">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1.2" stroke-linecap="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        <line x1="8" y1="8" x2="14" y2="14"/><line x1="14" y1="8" x2="8" y2="14"/>
+      </svg>
+      <p>No results found</p>
+    </div>
+  </div>
+
+  <!-- TOAST -->
+  <div class="toast hidden" id="toast"></div>
+
+  <!-- MODAL HELP -->
+  <div class="modal-overlay hidden" id="modal-overlay">
+    <div class="modal">
+      <div class="modal-header">
+        <span class="modal-title">How to use CopyVault</span>
+        <button class="modal-close" id="modal-close">×</button>
+      </div>
+      <div class="help-list-wrap">
+      <ul class="help-list">
+        <li>
+          <span class="help-key">Right-click</span>
+          Select any text on a page → right-click → <b>Save to CopyVault</b>
+        </li>
+        <li>
+          <span class="help-key">🔗 URL</span>
+          Click the link icon in the header to save the current page's URL instantly
+        </li>
+        <li>
+          <span class="help-key">Manual</span>
+          Open the extension → paste or type in the top field → press <b>Enter</b> or <b>+</b>
+        </li>
+        <li>
+          <span class="help-key">Click</span>
+          Click any saved item to instantly copy it back to your clipboard
+        </li>
+        <li>
+          <span class="help-key">∨ Expand</span>
+          Click the arrow to expand an item — edit the text, add or remove content, then <b>Save</b> or <b>Cancel</b>
+        </li>
+        <li>
+          <span class="help-key">📌 Pin</span>
+          Pin an item to keep it forever — pinned items are never auto-deleted
+        </li>
+        <li>
+          <span class="help-key">⠿ Drag</span>
+          Drag items up or down to reorder them however you like
+        </li>
+        <li>
+          <span class="help-key">⊞ Window</span>
+          Click the grid icon to open CopyVault in a floating window that stays open while you browse
+        </li>
+        <li>
+          <span class="help-key">20 slots</span>
+          Holds up to 20 items — oldest unpinned item drops when full
+        </li>
+        <li>
+          <span class="help-key">⚠️ Limits</span>
+          Right-click is unavailable on <b>chrome://</b> pages, the Chrome Web Store, and the address bar — this is a Chrome security restriction that applies to all extensions
+        </li>
+      </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <a class="footer-btn coffee" href="https://buymeacoffee.com/nightintel" target="_blank" rel="noopener">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 8h1a4 4 0 010 8h-1M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8zM6 1v3M10 1v3M14 1v3"/></svg>
+      Buy me a coffee
+    </a>
+    <button class="footer-btn help-btn" id="btn-help" title="How to use">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+    </button>
+    <span class="footer-count" id="footer-count">0 / 20</span>
+  </footer>
+
+  <script src="popup.js"></script>
+</body>
+</html>
